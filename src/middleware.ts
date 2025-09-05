@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const isAuthenticated = request.cookies.get("auth")?.value === "true";
+  const isAuthenticated = request.cookies.get("token")?.value !== undefined;
+
   const { pathname } = request.nextUrl;
 
   // Protect everything inside (protected)

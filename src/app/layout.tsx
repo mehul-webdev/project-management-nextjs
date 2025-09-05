@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import ReduxProvider from "@/store/provider";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`antialiased`} cz-shortcut-listen="true">
+        <Toaster richColors position="top-right" />;
         <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>
