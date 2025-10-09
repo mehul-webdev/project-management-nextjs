@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsUpDown, LogOut } from "lucide-react";
+import { ChevronsUpDown, LogOut, Moon, Settings, Sun } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { showToast } from "@/store/toastSlice";
+import { useTheme } from "next-themes";
 
 export function NavUser({
   user,
@@ -31,12 +32,13 @@ export function NavUser({
   user: {
     name: string;
     email: string;
-    avatar: string;
+    profilePicture: string;
   };
 }) {
   const { isMobile } = useSidebar();
   const dispatch = useDispatch();
   const router = useRouter();
+  const { setTheme } = useTheme();
 
   const handleLogout = async () => {
     try {
@@ -62,6 +64,17 @@ export function NavUser({
     dispatch(logout());
   };
 
+  const handleGetInitials = (name: string) => {
+    if (!name) {
+      return "";
+    }
+
+    return name
+      .split(" ")
+      .map((letter) => letter.slice(0, 1))
+      .join("");
+  };
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -72,8 +85,13 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarImage
+                  src={user.profilePicture || undefined}
+                  alt={user.name}
+                />
+                <AvatarFallback className="rounded-lg">{`${handleGetInitials(
+                  user.name
+                )}`}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -91,8 +109,13 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarImage
+                    src={user.profilePicture || undefined}
+                    alt={user.name}
+                  />
+                  <AvatarFallback className="rounded-lg">{`${handleGetInitials(
+                    user.name
+                  )}`}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -101,6 +124,19 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+
+            <DropdownMenuItem onClick={() => setTheme("light")}>
+              <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all  dark:-rotate-90" />
+              Light
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("dark")}>
+              <Moon className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:-rotate-90" />
+              Dark
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("system")}>
+              <Settings className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all  dark:-rotate-90" />
+              System
+            </DropdownMenuItem>
 
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut />

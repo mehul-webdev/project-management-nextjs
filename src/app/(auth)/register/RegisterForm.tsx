@@ -1,104 +1,170 @@
 "use client";
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import Link from "next/link";
-import api from "@/lib/axios";
-import { AxiosError } from "axios";
-import { useDispatch } from "react-redux";
-import { login } from "@/store/authSlice";
+import * as React from "react";
 import { useRouter } from "next/navigation";
-import { showToast } from "@/store/toastSlice";
+import Link from "next/link";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
+import { AxiosError } from "axios";
 import { toast } from "sonner";
+
+import { Form } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import api from "@/lib/axios";
+import { login } from "@/store/authSlice";
+import { showToast } from "@/store/toastSlice";
 import GoogleLoginButton from "../GoogleLoginButton";
+import { FormInput } from "@/app/components/clientComponents/FormInput";
+import { FormSelect } from "@/app/components/clientComponents/FormSelect";
+import { USER_ROLES } from "@/app/constants";
 
-const RegisterForm = () => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const dispatch = useDispatch();
+// ✅ Zod Schema for Validation
+const registerSchema = z.object({
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Enter a valid email address"),
+  role: z.string().nonempty("Role is required"),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .regex(/[A-Za-z]/, "Password must contain letters")
+    .regex(/\d/, "Password must contain numbers"),
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
+
+const RegisterForm: React.FC = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const [loading, setLoading] = React.useState(false);
 
-  const handleUserRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // ✅ Initialize React Hook Form
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    mode: "onTouched", // ✅ Trigger validation when inputs are touched
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      role: "",
+    },
+  });
 
+  // ✅ Submit handler
+  const onSubmit = async (data: RegisterFormValues) => {
     try {
-      const res = await api.post("/auth/register", { email, password });
+      setLoading(true);
+      const res = await api.post("/auth/register", data);
+
       dispatch(login(res.data.user));
       dispatch(
         showToast({
-          title: "Login Successfully",
-          description: "Please complete your tasks on time.",
+          title: "Registered Successfully",
+          description: "Welcome aboard! Let's start managing projects.",
           showCloseIcon: true,
           state: "success",
           show: true,
         })
       );
+
       router.push("/dashboard");
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
-      toast.error("Error", {
+      toast.error("Registration Failed", {
         description: error.response?.data?.message || error.message,
         closeButton: true,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleUserRegister} className={cn("flex flex-col gap-6")}>
-      <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Register your account</h1>
-        <p className="text-muted-foreground text-sm text-balance">
-          Enter your email below to register your account
-        </p>
-      </div>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className={cn("flex flex-col gap-6")}
+      >
+        {/* Header */}
+        <div className="flex flex-col items-center gap-2 text-center">
+          <h1 className="text-2xl font-bold">Create your account</h1>
+          <p className="text-muted-foreground text-sm">
+            Enter your details to register and get started.
+          </p>
+        </div>
 
-      <div className="grid gap-6">
-        <div className="grid gap-3">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="m@example.com"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+        {/* Name Fields */}
+        <div className="flex flex-col gap-6 md:flex-row">
+          <FormInput
+            control={form.control}
+            name="firstName"
+            label="First Name"
+            placeholder="Enter your first name"
+          />
+
+          <FormInput
+            control={form.control}
+            name="lastName"
+            label="Last Name"
+            placeholder="Enter your last name"
           />
         </div>
 
-        <div className="grid gap-3">
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+        <FormSelect
+          control={form.control}
+          name="role"
+          label="Select Role"
+          placeholder="Choose your role"
+          options={USER_ROLES}
+          groupLabel="Roles"
+        />
 
-        <Button type="submit" className="w-full">
-          Register
+        {/* Email Field */}
+        <FormInput
+          control={form.control}
+          name="email"
+          label="Email"
+          placeholder="m@example.com"
+          type="email"
+        />
+
+        {/* Password Field */}
+        <FormInput
+          control={form.control}
+          name="password"
+          label="Password"
+          placeholder="••••••••"
+          type="password"
+        />
+
+        {/* Submit Button */}
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Registering..." : "Register"}
         </Button>
 
-        <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-          <span className="bg-background text-muted-foreground relative z-10 px-2">
+        {/* Divider */}
+        <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:flex after:items-center after:border-t">
+          <span className="bg-background relative z-10 px-2 text-muted-foreground">
             Or continue with
           </span>
         </div>
 
+        {/* Social Login */}
         <GoogleLoginButton authState="Register" />
-      </div>
 
-      <div className="text-center text-sm">
-        Already Registered?&nbsp;
-        <Link href="/login" className="underline underline-offset-4">
-          Log In
-        </Link>
-      </div>
-    </form>
+        {/* Footer */}
+        <div className="text-center text-sm">
+          Already registered?{" "}
+          <Link href="/login" className="underline underline-offset-4">
+            Log in
+          </Link>
+        </div>
+      </form>
+    </Form>
   );
 };
 

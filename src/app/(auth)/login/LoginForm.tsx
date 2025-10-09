@@ -26,7 +26,9 @@ const LoginForm = () => {
 
     try {
       const res = await api.post("/auth/login", { email, password });
-      dispatch(login(res.data.user));
+      if (res.status === 200) {
+        dispatch(login());
+      }
       dispatch(
         showToast({
           title: "Login Successfully",

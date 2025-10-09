@@ -1,18 +1,24 @@
 "use client";
 
-import { useSelector } from "react-redux";
-import Layout from "../components/layout/Layout";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import api from "@/lib/axios";
+import { AxiosError } from "axios";
+import { updateUserDetails } from "@/store/authSlice";
+import ProtectedLayoutUi from "../components/layout/ProtectedLayout";
 
 export default function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const IS_INITIAL = useRef(true);
+  const dispatch = useDispatch();
   const toastData = useSelector((state: RootState) => state.toast);
 
+  // show toasts
   useEffect(() => {
     const {
       title,
@@ -24,7 +30,7 @@ export default function ProtectedLayout({
 
     if (show) {
       toast[toastState as "success" | "error" | "info" | "warning" | "loading"](
-        `${title}`,
+        title,
         {
           description,
           closeButton: showCloseIcon,
@@ -33,5 +39,30 @@ export default function ProtectedLayout({
     }
   }, [toastData]);
 
-  return <Layout>{children}</Layout>;
+  const handlegetUserData = useCallback(async () => {
+    try {
+      const response = await api.get("/user/");
+      const userData = response.data;
+
+      dispatch(updateUserDetails(userData.user));
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      toast.error("Error", {
+        description: error.response?.data?.message || error.message,
+        closeButton: true,
+      });
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!IS_INITIAL.current) {
+      return;
+    }
+
+    IS_INITIAL.current = false;
+
+    handlegetUserData();
+  }, [handlegetUserData]);
+
+  return <ProtectedLayoutUi>{children}</ProtectedLayoutUi>;
 }

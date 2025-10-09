@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import {
+  Book,
   BookOpen,
   Bot,
   Command,
   Frame,
+  LayoutDashboard,
   LifeBuoy,
   Map,
   PieChart,
@@ -26,112 +28,28 @@ import {
 import { NavUser } from "./nav-user";
 import { NavMain } from "./nav-main";
 import { NavProjects } from "./nav-projects";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: LayoutDashboard,
     },
     {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
+      title: "Projects",
+      url: "/projects",
+      icon: Book,
     },
     {
-      title: "Documentation",
-      url: "#",
+      title: "My Tasks",
+      url: "/tasks",
       icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
     },
   ],
-  navSecondary: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
-  ],
+
   projects: [
     {
       name: "Design Engineering",
@@ -152,6 +70,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useSelector((state: RootState) => state.auth);
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -176,7 +95,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser
+          user={
+            user || {
+              name: "",
+              email: "",
+              profilePicture: "",
+            }
+          }
+        />
       </SidebarFooter>
     </Sidebar>
   );
