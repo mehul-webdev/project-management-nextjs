@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import api from "@/lib/axios";
 import { cn } from "@/lib/utils";
-import { login, updateUserDetails } from "@/store/authSlice";
+import { updateUserDetails } from "@/store/authSlice";
 import { showToast } from "@/store/toastSlice";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -24,7 +23,6 @@ type UpdateProfileFormValues = z.infer<typeof updateProfileSchema>;
 
 const UpdateProfileForm = () => {
   const dispatch = useDispatch();
-  const router = useRouter();
   const form = useForm<UpdateProfileFormValues>({
     resolver: zodResolver(updateProfileSchema),
     mode: "onTouched",
@@ -50,9 +48,8 @@ const UpdateProfileForm = () => {
 
       // Redirect user to dashboard after successful role update
       setTimeout(() => {
-        // router.push("/dashboard");
         window.location.href = "/dashboard";
-      }, 5000);
+      }, 500);
     } catch (err) {
       console.error(err);
       dispatch(
