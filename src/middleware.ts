@@ -14,7 +14,7 @@ export const config = {
     "/update-profile/:path*",
     "/update-profile",
   ],
-  runtime: "nodejs", // important: allows process.env access
+  runtime: "nodejs",
 };
 
 export function middleware(request: NextRequest) {
@@ -27,17 +27,25 @@ export function middleware(request: NextRequest) {
   }
 
   const protectedRoutes = ["/dashboard", "/projects", "/tasks", "/settings"];
-
   let isAuthenticated = false;
   let role = "";
 
   const JWT_SECRET = process.env.JWT_SECRET;
   if (!JWT_SECRET) {
-    console.error("[Middleware] JWT_SECRET not defined!");
+    console.error(
+      JSON.stringify({ level: "error", message: "JWT_SECRET not defined!" })
+    );
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  console.log("the token is", token);
+  console.log(
+    JSON.stringify({
+      level: "info",
+      message: "Middleware hit",
+      pathname,
+      token,
+    })
+  );
 
   if (token) {
     try {
@@ -46,9 +54,10 @@ export function middleware(request: NextRequest) {
         role?: string;
       };
 
-      // Check id and role exist
       if (!decoded.id || decoded.role === undefined || decoded.role === null) {
-        console.log("[Middleware] Token missing id or role, clearing cookie");
+        console.warn(
+          JSON.stringify({ level: "warn", message: "Token missing id or role" })
+        );
         const res = NextResponse.redirect(new URL("/login", request.url));
         res.cookies.delete("token");
         return res;
@@ -56,39 +65,43 @@ export function middleware(request: NextRequest) {
 
       isAuthenticated = true;
       role = decoded.role || "";
+
       console.log(
-        "[Middleware] Authenticated user:",
-        decoded.id,
-        "Role:",
-        role
+        JSON.stringify({
+          level: "info",
+          message: "Authenticated user",
+          userId: decoded.id,
+          role,
+        })
       );
     } catch (err) {
-      console.log("[Middleware] Invalid token:", err);
+      console.warn(
+        JSON.stringify({ level: "warn", message: "Invalid token", error: err })
+      );
       const res = NextResponse.redirect(new URL("/login", request.url));
       res.cookies.delete("token");
       return res;
     }
   }
 
-  // 1️⃣ Authenticated but no role → update-profile
+  // Authenticated but no role → redirect to update-profile
   if (isAuthenticated && role === "" && pathname !== "/update-profile") {
     return NextResponse.redirect(new URL("/update-profile", request.url));
   }
 
-  // 2️⃣ Authenticated with role → prevent login/register
+  // Authenticated with role → prevent login/register
   if (
     isAuthenticated &&
     role !== "" &&
-    (pathname === "/login" || pathname === "/register")
+    ["/login", "/register"].includes(pathname)
   ) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // 3️⃣ Unauthenticated trying protected route → login
+  // Unauthenticated trying protected route → redirect to login
   if (!isAuthenticated && protectedRoutes.some((r) => pathname.startsWith(r))) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // 4️⃣ Everything else → allow
   return NextResponse.next();
 }

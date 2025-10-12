@@ -7,7 +7,7 @@ const GoogleLoginButton = ({ authState }: { authState: string }) => {
       variant="outline"
       className="w-full"
       onClick={() => {
-        window.location.href = "http://localhost:5000/api/auth/google";
+        window.location.href = `${process.env.NEXT_PUBLIC_BASE_LOCAL_API_URL}/api/auth/google`;
       }}
     >
       {/* Google Icon */}
