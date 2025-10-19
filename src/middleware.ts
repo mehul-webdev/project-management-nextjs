@@ -95,6 +95,14 @@ export function middleware(request: NextRequest) {
     role !== "" &&
     ["/login", "/register"].includes(pathname)
   ) {
+    console.log(
+      JSON.stringify({
+        level: "info",
+        message: "Middleware Authenticated",
+        token,
+        pathname,
+      })
+    );
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
