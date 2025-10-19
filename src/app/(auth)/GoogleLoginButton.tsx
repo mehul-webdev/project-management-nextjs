@@ -3,7 +3,7 @@ import React from "react";
 
 const GoogleLoginButton = ({ authState }: { authState: string }) => {
   console.log(
-    `here url hit is: ${process.env.NEXT_PUBLIC_BASE_LOCAL_API_URL}/api/auth/google`
+    `here url hit is: ${process.env.NEXT_PUBLIC_BASE_API_URL}/api/auth/google`
   );
   return (
     <Button

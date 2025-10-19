@@ -18,8 +18,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination:
-          "https://project-management-nodejs.onrender.com/api/:path*", // 🔁 replace with your actual Render backend URL
+        destination: `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/:path*`,
       },
     ];
   },
