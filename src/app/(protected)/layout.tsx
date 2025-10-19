@@ -41,7 +41,7 @@ export default function ProtectedLayout({
 
   const handlegetUserData = useCallback(async () => {
     try {
-      const response = await api.get("/user/");
+      const response = await api.get("/api/user/");
       const userData = response.data;
 
       dispatch(updateUserDetails(userData.user));

@@ -42,7 +42,7 @@ export function NavUser({
 
   const handleLogout = async () => {
     try {
-      const res = await api.post("/auth/logout");
+      const res = await api.post("/api/auth/logout");
 
       if (res.status === 200) {
         dispatch(logout());
