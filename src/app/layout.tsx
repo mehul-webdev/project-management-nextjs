@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import ReduxProvider from "@/store/provider";
 import { Toaster } from "sonner";
-import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "Create Next App",
