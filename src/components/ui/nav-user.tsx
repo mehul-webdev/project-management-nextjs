@@ -54,7 +54,7 @@ export function NavUser({
             show: true,
           })
         );
-        router.push("/dashboard");
+        router.push("/login");
       }
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
